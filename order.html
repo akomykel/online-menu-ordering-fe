@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Online Ordering Application</title>
+		<link rel="stylesheet" href="css/bootstrap.min.css" />
+		<link rel="stylesheet" href="css/bootstrap-grid.min.css" />
+		<link rel="stylesheet" href="css/style.css" />
+		<script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
+		<script type="text/javascript" src="js/bootstrap.bundle.min.js"></script>
+		<script type="text/javascript" src="js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="js/scripts.js"></script>
+		<script>
+			$(document).ready(function(){
+
+				// Call API to get menu by Id
+				var selectedOrder = function(itemId) {
+					$.ajax({
+						url: "http://localhost:88/api/menu/" + itemId,
+					}).done(function(data) {
+						$('#lblPrice').html("<strong>"+data.price+"</strong>");
+						$('#itemId').val(data.id);
+						$('#itemPrice').val(data.price);
+					});
+				}
+
+				// Call API to save item to session
+				var addToTray = function(itemId, qty, price) {
+					var jsonData = { "item":itemId, "quantity":qty, "price":price }
+
+					$.ajax({
+						method: "POST",
+						url: "http://localhost:88/api/createOrder",
+						contentType: "application/json",
+						data: JSON.stringify(jsonData),
+						success: function(data){
+							alert('success');
+						},
+						error: function(e) {
+							alert("ERROR");
+						},
+						done: function(e) {
+							alert('DONE');
+						}
+					});
+				}
+
+				// Get id parameter from url
+				var p = window.location.search.substring(1).split('=');
+				(p[1] === undefined) ? '' : selectedOrder(p[1])
+
+				// Increment/Decrement order and calculate price
+				var calculateOrder = function(operand) {
+					var o = (operand == '+') ? + 1 : - 1;
+					var q = parseInt($('#quantity').val()) + o;
+					$('#quantity').val(q);
+
+					var p = parseInt($('#quantity').val()) * parseInt($('#itemPrice').val());					
+					$('#lblPrice').text(p);
+				}
+
+				// Button to add quantity
+				$('#btnAddQuantity').click(function(){
+					calculateOrder('+');
+				});
+
+				// Button to subtract quantity
+				$('#btnSubtractQuantity').click(function(){
+					calculateOrder('-');
+				});
+
+				// Button to add item to tray for session
+				$('#btnAddToTray').click(function(){
+					var itemId = $('#itemId').val(),
+						qty    = $('#quantity').val(),
+						price  = $('#lblPrice').text();
+					addToTray(itemId, qty, price);
+				});
+			});
+		</script>
+	</head>
+	<body>
+
+		<nav class="navbar navbar-expand-lg navbar-light bg-light">
+			<a class="navbar-brand" href="#">Food Tiger</a>
+			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+
+			<div class="collapse navbar-collapse" id="navbarSupportedContent">
+				<ul class="navbar-nav mr-auto">
+					<li class="nav-item active">
+						<a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+					</li>
+					<li class="nav-item dropdown" id="navbar-menu"></li>
+					<li class="nav-item">
+						<a class="nav-link" href="mytray.html">My Tray</a>
+					</li>
+				</ul>
+			</div>
+		</nav>
+
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-3"></div>
+				<div class="col-lg-6"><img src="img/default_img.jpg"></div>
+				<div class="col-lg-3"></div>
+			</div>
+
+			<div class="row">
+				<div class="col-lg-3"></div>
+				<div class="col-lg-6">
+					<div class="row">
+						<div class="col-lg-3"><input type="button" id="btnSubtractQuantity" value="-" /></div>
+						<div class="col-lg-6">
+							<input type="text" id="itemId" />
+							<input type="hidden" id="itemPrice" />
+							<input type="text" id="quantity" value="1" readonly="" />
+						</div>
+						<div class="col-lg-3"><input type="button" id="btnAddQuantity" value="+" /></div>
+					</div>
+				</div>
+				<div class="col-lg-3"></div>
+			</div>
+
+			<div class="row">
+				<div class="col-lg-3"></div>
+				<div class="col-lg-6">
+					<div class="row">
+						<div class="col-lg-4">PHP</div>
+						<div class="col-lg-8" id="lblPrice"></div>
+					</div>
+				</div>
+				<div class="col-lg-3"></div>
+			</div>
+
+			<div class="row">
+				<div class="col-lg-4"></div>
+				<div class="col-lg-8"><input type="button" id="btnAddToTray" value="Add to Tray"></div>
+			</div>
+		</div>
+
+	</body>
+</html>
